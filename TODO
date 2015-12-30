@@ -1,0 +1,59 @@
+Things that should be ready for 0.4.0:
+=======================================
+platform specific:
+- provide recent COLLADA debs/rpms/...
+
+cmake specific:
+ - Add Google Breakpad support (wenzel: very much optional .. :) - The only
+   person ever using this feature would probably be me, and my build "farm" VMs use scons).
+ - Add version information for targets (VERSION/SOVERSION)
+ - Disable PCH on OS X when using universal binaries
+
+bigger tasks:
+- Directional VPL luminaire support
+- rework medium MI path tracer
+
+smaller:
+- debug 'spherical'+'bdpt' plugin issue
+- better manifold convergence criterion / optimizations
+- stratify large mutations in PSSMLT
+- reduce # of parameters (e.g. merge sampleDirect, directSamples) 
+- verify two-stage MLT
+- look how a step could possibly increase the distance for the IOR 1 torus
+- look at numerical stability in single precision
+- look through parameters of MLT, ERPT, PSSMLT
+- render toshiya's box scene
+- check 'directional' and 'irradiancemeter' units
+- debug issue with MF perturbation and directional emitters
+
+General:
+========================
+- reduce the number of header files that are included in various places
+
+At some point
+=========================
+- verify irradiancemeter, radiancemeter, etc.
+- bidirectional layer: time sample drawn before pixel sample! :(
+- telecentric lens camera sampling 
+- check kkay normalization factor
+- check reciprocity in various BSDFs and phase functions
+- optionally disable sending of textures, geometry (?), envmaps
+- Make mitsuba network code tolerant to node shutdowns
+- release document about improved Veach bidirectional mutation scheme
+- Validate bump mapping reciprocity
+- Displacement mapping
+- Extend Python API!
+- Improve homogeneous.cpp (e.g. only use EBalance when the densities are actually different across channels), improve documentation about mediumSamplingWeight
+- work a bit more on the BSSRDF material and get in touch with Eugene
+- different environment map sampling technique:
+   minimize expected number of traversal steps (Huffman tree). Heuristic to
+   preserve spatial connectivity: split by minimizing estimated entropy H:
+     exp. steps = 1+ pLeft*H(TLeft) + pRight * H(TRight), use SAT for finding split planes efficiently
+- set up MSVC 2010 and matching dependency binaries
+
+- Things that are probably broken in various places:
+    - Testcases
+
+Far future
+=========================
+- BSDF visualization tool, external Python-based graphical material editor
