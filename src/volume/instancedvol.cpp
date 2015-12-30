@@ -38,17 +38,18 @@ public:
             m_albedo = Spectrum(0.0f);
         }
 
-        m_blockSize = props.getVector("blockSize");
-        m_divideReso.x = props.getInteger("divideX");
+        m_blockSize = props.getVector("blockSize");    // [0-1]^3 ?
+        m_divideReso.x = props.getInteger("divideX");	// divide volume into divideX*divideY small rectangular areas
         m_divideReso.y = props.getInteger("divideY");
 
-        m_reso.x = props.getInteger("tileX");
-        m_reso.y = props.getInteger("tileY");
+        m_reso.x = props.getInteger("tileX");	// test sample, with tile resolution tileX*tileY, each tile is copied from a
+												// rectangular area in the volume
+        m_reso.y = props.getInteger("tileY");	// "tile" here has different mean compared with tilevol2's, though both final volumes may become large
         if ( props.hasProperty("fillBlockInfo") )
         {
             if ( props.hasProperty("blockInfo") || props.hasProperty("blockFile") )
                 Log(EError, "Block information declared more than once!");
-            m_blockID.resize(m_reso.x*m_reso.y, props.getInteger("fillBlockInfo"));
+            m_blockID.resize(m_reso.x*m_reso.y, props.getInteger("fillBlockInfo"));		// const block id values
 
             m_blockFile = "";
         }
@@ -61,7 +62,7 @@ public:
             m_blockID.resize(m_reso.x*m_reso.y);
             for ( int i = 0; i < m_reso.x*m_reso.y; ++i )
             {
-                if ( !(iss >> m_blockID[i]) )
+                if ( !(iss >> m_blockID[i]) )	// manully selected static id values
                     Log(EError, "Failed to parse the information for block %d", i);
                 if ( m_blockID[i] < 0 || m_blockID[i] >= m_divideReso.x*m_divideReso.y )
                     Log(EError, "Invalid block id: %d", m_blockID[i]);
@@ -70,7 +71,7 @@ public:
             m_blockFile = "";
         }
         else
-            m_blockFile = props.getString("blockFile");
+            m_blockFile = props.getString("blockFile");		// set id values from the file
 	}
 
 
@@ -156,7 +157,7 @@ public:
                     Log(EError, "Invalid block id: %d", m_blockID[i]);
 
             /* Compute transforms */
-            m_volumeAABB.min.x = -0.5f*static_cast<Float>(m_reso.x)*m_blockSize.x;
+            m_volumeAABB.min.x = -0.5f*static_cast<Float>(m_reso.x)*m_blockSize.x;	// AABB? what does '*blockSize' means?// understood.
             m_volumeAABB.min.y = -0.5f*static_cast<Float>(m_reso.y)*m_blockSize.y;
             m_volumeAABB.min.z = -0.5f*m_blockSize.z;
 
@@ -174,12 +175,28 @@ public:
                     1.0f/volumeExtents.z
                 ))*
                 Transform::translate(Vector(
-                    -m_volumeAABB.min.x, -m_volumeAABB.min.y, -m_volumeAABB.min.z
+                    -m_volumeAABB.min.x, -m_volumeAABB.min.y, -m_volumeAABB.min.z // min.x < 0, so understood!
                 ))*m_worldToVolume;
 
             m_aabb.reset();
             for ( int i = 0; i < 8; ++i )
                 m_aabb.expandBy(m_volumeToWorld(m_volumeAABB.getCorner(i)));
+
+			/* Log aabb */
+			std::ostringstream oss;
+			oss << "\nData AABB: " << m_volumeAABB.toString() << "\nAABB: " << m_aabb.toString();
+			oss << std::flush;
+			Log(EDebug, oss.str().c_str());
+
+			/* Compute step size */
+			m_stepSize = std::numeric_limits<Float>::infinity();
+			/*
+			for (int i = 0; i < 3; ++i) {
+				m_stepSize = 0.5f * std::min(m_stepSize, m_blockSize[i] / (Float)(m_dataReso[i] - 1)); // the position of 0.5 ??
+			}*/
+
+			m_stepSize = std::min(m_stepSize, 0.5f*m_blockSize.x*m_divideReso.x / (Float)(m_dataReso.x - 1));
+			m_stepSize = std::min(m_stepSize, 0.5f*m_blockSize.y*m_divideReso.y / (Float)(m_dataReso.y - 1));
 
 		    /* Precompute cosine and sine lookup tables */
 		    for (int i=0; i<255; i++) {
@@ -260,6 +277,8 @@ public:
 			  zmax = stream->readSingle();
         if ( id == 0 )
 			m_dataAABB = AABB(Point(xmin, ymin, zmin), Point(xmax, ymax, zmax));
+
+		// Code below will not be compiled, since 0. AABB is set by blockSize. Note: blockSize.x > 0
 #if 0
         else if ( std::abs(m_dataAABB.min.x - xmin) > Epsilon || std::abs(m_dataAABB.min.y - ymin) > Epsilon || std::abs(m_dataAABB.min.z - zmin) > Epsilon ||
                   std::abs(m_dataAABB.max.x - xmax) > Epsilon || std::abs(m_dataAABB.max.y - ymax) > Epsilon || std::abs(m_dataAABB.max.z - zmax) > Epsilon )
