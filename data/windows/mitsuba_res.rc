@@ -1,4 +1,0 @@
-#include <windows.h>
-
-LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
-100 ICON    mitsuba.ico
