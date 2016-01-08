@@ -14,5 +14,6 @@ plugins += env.SharedLibrary('tiledvol', ['tiledvol.cpp'])
 plugins += env.SharedLibrary('tiledvol2', ['tiledvol2.cpp'])
 plugins += env.SharedLibrary('albedovol', ['albedovol.cpp'])
 plugins += env.SharedLibrary('instancedvol', ['instancedvol.cpp'])
+plugins += env.SharedLibrary('instancedvolplus', ['instancedvolplus.cpp'])
 
 Export('plugins')

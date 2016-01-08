@@ -1061,6 +1061,9 @@
     <ClCompile Include="..\src\volume\gridvol_simple.cpp">
       <Filter>Source Files\volume</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\volume\instancedvolplus.cpp">
+      <Filter>Source Files\volume</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup Label="Header Files">
     <ClInclude Include="..\src\converter\converter.h">
