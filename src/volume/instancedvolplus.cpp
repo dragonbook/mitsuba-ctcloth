@@ -50,7 +50,11 @@ public:
 
 		//
 		if (props.hasProperty("fillRotateXY")) {
-			m_rotateXY
+			float theta = props.getFloat("fillRotateXY");
+			m_rotateXY = new float[m_reso.x * m_reso.y];
+			for (int i = 0; i < m_reso.x * m_reso.y; ++i) {
+				m_rotateXY[i] = theta;
+			}
 		}
 		else if (props.hasProperty("rotateXYInfo")) {
 			std::istringstream iss(props.getString("rotateXY"));
@@ -61,8 +65,15 @@ public:
 				}
 			}
 		}
+		else if (props.hasProperty("rotateXYDivideReso")) {
+			int divideRes = props.getInteger("rotateXYDivideReso");
+			m_rotateXY = new float[m_reso.x * m_reso.y];
+			for (int i = 0; i < m_reso.x * m_reso.y; ++i) {
+				m_rotateXY[i] = (i % divideRes) * (360.0 / divideRes);
+			}
+		}
 		else {
-			// random
+			Log(EError, "No rotateXY information provide");
 		}
 
 	}
@@ -71,7 +82,7 @@ public:
 	InstancedVolumePlus(Stream *stream, InstanceManager *manager) 
 		: VolumeDataSourceEx(stream, manager), m_ready(false)
     {
-		// TODO:
+		/*
 		m_volumeToWorld = Transform(stream);
 
         m_densityFile = stream->readString();
@@ -79,17 +90,17 @@ public:
         m_albedoFile = stream->readString();
         m_albedo = m_albedoFile == "" ? Spectrum(stream) : Spectrum(0.0f);
         m_blockSize = Vector(stream);
-//        m_divideReso = Vector2i(stream);
+        m_divideReso = Vector2i(stream);
 
         m_reso = Vector2i(stream);
         m_blockFile = stream->readString();
         if ( m_blockFile == "" )
         {
- //           m_blockID.resize(m_reso.x*m_reso.y);
-//            stream->readIntArray(&m_blockID[0], m_blockID.size());
+			m_blockID.resize(m_reso.x*m_reso.y);
+            stream->readIntArray(&m_blockID[0], m_blockID.size());
         }
 
-		configure();
+		configure();*/
 	}
 
 
@@ -101,12 +112,17 @@ public:
         delete[] m_data;
         delete[] m_volumeType;
         delete[] m_channels;
+
+		//
+		delete[] m_rotateXY;
+		delete[] m_rotate;
+		delete[] m_localToGrid;
     }
 
 
 	void serialize(Stream *stream, InstanceManager *manager) const
     {
-		// TODO:
+		/*
 		VolumeDataSourceEx::serialize(stream, manager);
 
         m_volumeToWorld.serialize(stream);
@@ -116,13 +132,13 @@ public:
         stream->writeString(m_albedoFile);
         if ( m_albedoFile == "" ) m_albedo.serialize(stream);
         m_blockSize.serialize(stream);
-//        m_divideReso.serialize(stream);
+        m_divideReso.serialize(stream);
 
         m_reso.serialize(stream);
         stream->writeString(m_blockFile);
 		if (m_blockFile == "")
 			int fool = 0;
-//            stream->writeIntArray(&m_blockID[0], m_blockID.size());
+            stream->writeIntArray(&m_blockID[0], m_blockID.size());*/
 	}
 
 
@@ -137,6 +153,7 @@ public:
             if ( m_albedoFile != "" )
                 loadFromFile(m_albedoFile, 2);
 
+			/*
             if ( m_blockFile != "" )
             {
                 ref<FileStream> fs = new FileStream(m_blockFile, FileStream::EReadOnly);
@@ -146,10 +163,10 @@ public:
 
 				m_blockID = new int[sz];
                 fs->readIntArray(&m_blockID[0], sz);
-            }
+            }*/
 
             /* Compute transforms */
-            m_volumeAABB.min.x = -0.5f*static_cast<Float>(m_reso.x)*m_blockSize.x;	// AABB? what does '*blockSize' means?// understood.
+			m_volumeAABB.min.x = -0.5f*static_cast<Float>(m_reso.x)*m_blockSize.x;
             m_volumeAABB.min.y = -0.5f*static_cast<Float>(m_reso.y)*m_blockSize.y;
             m_volumeAABB.min.z = -0.5f*m_blockSize.z;
 
@@ -167,8 +184,29 @@ public:
                     1.0f/volumeExtents.z
                 ))*
                 Transform::translate(Vector(
-                    -m_volumeAABB.min.x, -m_volumeAABB.min.y, -m_volumeAABB.min.z // min.x < 0, so understood!
+                    -m_volumeAABB.min.x, -m_volumeAABB.min.y, -m_volumeAABB.min.z
                 ))*m_worldToVolume;
+
+			//
+			if (m_scaleXY.x > m_dataReso.x || m_scaleXY.y > m_dataReso.y) {
+				Log(EError, "m_scaleXY is out of data resolution!");
+			}
+
+			//
+			m_blockToLocal = Transform::translate(Vector(-0.5, -0.5, 0.0));
+			m_rotate = new Transform[m_reso.x * m_reso.y];
+			for (int i = 0; i < m_reso.x * m_reso.y; ++i) {
+				m_rotate[i] = Transform::rotate(Vector(0.0, 0.0, 1.0), m_rotateXY[i]);
+			}
+
+			//
+			m_localToGrid = new Transform[m_reso.x * m_reso.y];
+			for (int i = 0; i < m_reso.x * m_reso.y; ++i) {
+				Vector2f volumeCenterXY = Vector2f(m_dataReso.x * 0.5, m_dataReso.y * 0.5);
+				m_localToGrid[i] = Transform::translate(Vector(m_centerXY.x, m_centerXY.y, 0.0)) *
+					m_rotate[i] *
+					Transform::scale(Vector(m_scaleXY.x, m_scaleXY.y, m_dataReso.z));
+			}
 
             m_aabb.reset();
             for ( int i = 0; i < 8; ++i )
@@ -187,8 +225,9 @@ public:
 				m_stepSize = 0.5f * std::min(m_stepSize, m_blockSize[i] / (Float)(m_dataReso[i] - 1)); // the position of 0.5 ??
 			}*/
 
-			m_stepSize = std::min(m_stepSize, 0.5f*m_blockSize.x*m_divideReso.x / (Float)(m_dataReso.x - 1));
-			m_stepSize = std::min(m_stepSize, 0.5f*m_blockSize.y*m_divideReso.y / (Float)(m_dataReso.y - 1));
+			for (int i = 0; i < 3; ++i) {
+				m_stepSize = std::min(m_stepSize, 0.5f*m_blockSize[i] / m_dataReso[i]); // better: divide m_scaleXY
+			}
 
 		    /* Precompute cosine and sine lookup tables */
 		    for (int i=0; i<255; i++) {
@@ -330,7 +369,8 @@ public:
 
     Float lookupFloat(const Point &p) const
     {
-        int idx = getCoord(p);
+		int bid = -1;
+        int idx = getCoord(p, bid);
         if ( idx < 0 ) return 0.0;
 
 		switch (m_volumeType[0])
@@ -350,7 +390,8 @@ public:
 
     Spectrum lookupSpectrum(const Point &p) const
     {
-        int idx = getCoord(p);
+		int bid = -1;
+        int idx = getCoord(p, bid);
         if ( idx < 0 ) return Spectrum(0.0f);
 
         if ( m_nVolumes < 3 )
@@ -377,7 +418,8 @@ public:
 
     Vector lookupVector(const Point &p) const
     {
-        int idx = getCoord(p);
+		int bid = -1;
+        int idx = getCoord(p, bid);
         if ( idx < 0 ) return Vector(0.0f);
 
 		Vector value;
@@ -397,7 +439,8 @@ public:
 		}
 
 		if (!value.isZero())
-			return normalize(m_volumeToWorld(value));
+			return normalize(m_volumeToWorld(m_rotate[bid].inverse()(value)));
+//			return normalize(m_volumeToWorld(value));
 		else
 			return Vector(0.0f);
     }
@@ -408,7 +451,8 @@ public:
     {
         Assert( gloss == NULL );
 
-        int idx = getCoord(p);
+		int bid = -1;
+        int idx = getCoord(p, bid);
         if ( idx < 0 )
         {
             if ( density ) *density = 0.0f;
@@ -451,8 +495,9 @@ public:
                 value = Vector(0.0f);
 		    }
 
-		    if (!value.isZero())
-			    *direction = normalize(m_volumeToWorld(value));
+			if (!value.isZero())
+				*direction = normalize(m_volumeToWorld(m_rotate[bid].inverse()(value)));
+//			    *direction = normalize(m_volumeToWorld(value));
 		    else
 			    *direction = Vector(0.0f);
         }
@@ -541,6 +586,7 @@ protected:
     }
 
 
+	/*
     inline int getCoord(const Point &_p) const
     {
 		Point p = m_worldToBlock.transformAffine(_p);
@@ -561,7 +607,26 @@ protected:
         int iy = clamp(floorToInt(p.y), 0, m_dataReso.y - 1);
         int iz = clamp(floorToInt(p.z), 0, m_dataReso.z - 1);
         return (iz*m_dataReso.y + iy)*m_dataReso.x + ix;
-    }
+    }*/
+
+	inline int getCoord(const Point &_p, int &_bid) const {
+		Point p = m_worldToBlock.transformAffine(_p);
+		int bx = floorToInt(p.x), by = floorToInt(p.y);
+
+        if ( bx < 0 || bx >= m_reso.x || by < 0 || by >= m_reso.y || p.z < 0.0f || p.z > 1.0f )
+            return -1;
+
+		int bid = by * m_reso.x + bx;
+		_bid = bid;
+		Point inBlock(p.x - std::floor(p.x), p.y - std::floor(p.y), p.z);
+		Point inLocal = m_blockToLocal.transformAffine(inBlock);
+		Point inGrid = m_localToGrid[bid].transformAffine(inLocal);
+
+		int ix = clamp(floorToInt(inGrid.x), 0, m_dataReso.x - 1);
+		int iy = clamp(floorToInt(inGrid.y), 0, m_dataReso.y - 1);
+		int iz = clamp(floorToInt(inGrid.z), 0, m_dataReso.z - 1);
+		return (iz*m_dataReso.y + iy)*m_dataReso.x + ix;
+	}
 
 
     bool m_ready;
@@ -584,8 +649,9 @@ protected:
 	Vector2i m_scaleXY;
 	Vector2i m_centerXY;
 	float *m_rotateXY;
+	Transform *m_rotate;	// helpful to transform orientation
 //	Vector2i *m_blockTranslateXY; // TODO:
-	Transform *m_localGridToVolumeGrid;
+	Transform *m_localToGrid;
 
     int m_nVolumes;
     ref<MemoryMappedFile> *m_mmap;
@@ -596,7 +662,7 @@ protected:
 	Vector3i m_dataReso;
 	Transform m_volumeToWorld, m_worldToVolume;
     Transform m_worldToBlock;
-	Transform m_blockToLocalGrid;	//
+	Transform m_blockToLocal;	//
 	Float m_stepSize;
 	AABB m_dataAABB;
 	
