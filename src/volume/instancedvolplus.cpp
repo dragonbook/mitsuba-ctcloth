@@ -3,6 +3,7 @@
 #include <mitsuba/core/fresolver.h>
 #include <mitsuba/core/properties.h>
 #include <mitsuba/core/mmap.h>
+#include <mitsuba/core/random.h>
 
 
 MTS_NAMESPACE_BEGIN
@@ -68,8 +69,9 @@ public:
 		else if (props.hasProperty("rotateXYDivideReso")) {
 			int divideRes = props.getInteger("rotateXYDivideReso");
 			m_rotateXY = new float[m_reso.x * m_reso.y];
+			ref<Random> rnd = new Random();
 			for (int i = 0; i < m_reso.x * m_reso.y; ++i) {
-				m_rotateXY[i] = (i % divideRes) * (360.0 / divideRes);
+				m_rotateXY[i] = rnd->nextUInt(divideRes) * (360.0 / divideRes);
 			}
 		}
 		else {
