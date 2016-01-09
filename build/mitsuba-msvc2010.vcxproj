@@ -940,6 +940,7 @@
     <ClCompile Include="..\src\utils\compressvol.cpp" />
     <ClCompile Include="..\src\utils\readvol.cpp" />
     <ClCompile Include="..\src\volume\albedovol.cpp" />
+    <ClCompile Include="..\src\volume\btmapvol.cpp" />
     <ClCompile Include="..\src\volume\gridvol2_simple.cpp" />
     <ClCompile Include="..\src\volume\gridvol_simple.cpp" />
     <ClCompile Include="..\src\volume\instancedvol.cpp" />
