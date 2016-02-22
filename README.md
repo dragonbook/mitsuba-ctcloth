@@ -1,7 +1,8 @@
 # mitsuba-ctcloth
+Code for rendering fabric volumes described in papers: ctcloth11 and ctcloth12.
 
 ## Code
-The main code is copied from ctcloth12[shuang 2012](http://www.cs.cornell.edu/projects/ctcloth/data/).
+The main code is copied from [ctcloth12](http://www.cs.cornell.edu/projects/ctcloth/data/).
 
 ## Build
 The render system is based on Mitsuba [Physically-based Renderer](http://www.mitsuba-renderer.org/) v0.4.4.
