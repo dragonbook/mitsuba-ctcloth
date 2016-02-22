@@ -13,13 +13,100 @@ public:
 		EQuantizedDirections = 4
 	};
 
+	void readBlockInfo(const std::string &filename) {
+		cout << "Read block information in file: <" << filename << "> .." << endl;
+		ref<FileStream> stream = new FileStream(filename, FileStream::EReadOnly);
+		stream->setByteOrder(Stream::ELittleEndian);
+
+		int type = stream->readInt();
+		cout << "type: " << type << endl;
+
+		int n_blocks = stream->readInt();
+		cout << "n_blocks: " << n_blocks << endl;
+
+		cout << "filename, scale: ---" << endl;
+		for (size_t i = 0; i < n_blocks; ++i) {
+			std::string fn = stream->readString();
+			Vector s = Vector(stream);
+
+			cout << fn << ", (" << s.x << "," << s.y << "," << s.z << ")." << endl;
+		}
+		cout << "--------------------" << endl;
+		cout << "Done.";
+	}
+
+	void readIndices(const std::string &filename) {
+		cout << "Read Indices information in file: <" << filename << "> .." << endl;
+		ref<FileStream> stream = new FileStream(filename, FileStream::EReadOnly);
+		stream->setByteOrder(Stream::ELittleEndian);
+
+		Vector2i res = Vector2i(stream);
+		cout << "res: " << res.x << "," << res.y << endl;
+		AABB dataAABB = AABB(stream);
+		cout << "AABB: " << endl;
+		cout << "min: " << dataAABB.min.x << "," << dataAABB.min.y << "," << dataAABB.min.z << endl;
+		cout << "min: " << dataAABB.max.x << "," << dataAABB.max.y << "," << dataAABB.max.z << endl;
+
+		int *tileId = new int[res.x * res.y];
+		stream->readIntArray(tileId, res.x * res.y);
+		cout << "tile ids:" << endl;
+//		for (int i = 0; i < res.x * res.y; ++i) {
+		for (int i = 0; i < res.x; ++i) {
+			cout << tileId[i] << ",";
+		}
+		cout << endl;
+
+		Float *transforms = new Float[3 * res.x*res.y];
+		stream->readFloatArray(&transforms[0], 3 * res.x*res.y);
+		cout << "transforms:" << endl;
+		for (int i = 0; i < res.x; ++i) {
+			cout << "(" << transforms[3 * i] << "," << transforms[3 * i + 1] << "," << transforms[3 * i + 2] << "),";
+		}
+		cout << endl;
+
+		int nSpectrumMaps = stream->readInt();
+		cout << "nSpectrumMaps: " << nSpectrumMaps << endl;
+		for (size_t i = 0; i < nSpectrumMaps; ++i) {
+			cout << "map" << i << ":" << endl;
+			int nitem = stream->readInt();
+			cout << "nitem: " << nitem << endl;
+			for (int j = 0; j < nitem; ++j) {
+				int v = stream->readInt();
+				float r = stream->readFloat();
+				float g = stream->readFloat();
+				float b = stream->readFloat();
+				cout << "v,(r,g,b): " << v << ",(" << r << "," << g << "," << b << ")" << endl;
+//				Spectrum s;
+//				s.fromLinearRGB(r, g, b);
+			}
+		}
+
+		int *tileSpectrumMap = new int[res.x * res.y];
+		stream->readIntArray(tileSpectrumMap, res.x*res.y);
+		for (int i = 0; i < res.x; ++i) {
+			cout << tileSpectrumMap[i] << ",";
+		}
+		cout << endl;
+		cout << "Done." << endl;
+	}
+
 	int run(int argc, char **argv) {
-		if (argc != 2) {
-			cout << "Syntax: mtsutil compressvol <input.vol> <output.vol>" << endl;
+		if (argc != 3) {
+			cout << "Syntax: mtsutil readvol <volumeTypeId> <input.vol> " << endl;
+			cout << "ID-Type: 0-simpleVolume, 1-blockInfo, 2-blockIndices " << endl;
 			Log(EError, "Invalid number of arguments!");
 		}
 
-		ref<FileStream> is = new  FileStream(argv[1], FileStream::EReadOnly);
+		if (argv[1][0] == '1') {
+			readBlockInfo(argv[2]);
+			return 0;
+		}
+		else if (argv[1][0] == '2') {
+			readIndices(argv[2]);
+			return 0;
+		}
+
+		ref<FileStream> is = new  FileStream(argv[2], FileStream::EReadOnly);
 		is->setByteOrder(Stream::ELittleEndian);
 
 		char header[3];
@@ -62,15 +149,19 @@ public:
 				break;
 			case EUInt8:
 				type_size = 1;
+				break;
+			case EQuantizedDirections:
+				type_size = 2;//?
+				break;
 			default:
 				Log(EError, "Encountered a volume data file of unknown type");
 				break;
 		}
 
-		uint8_t *datau8 = new uint8_t[type_size * totalSize];
-		is->read(datau8, type_size * totalSize);
+//		uint8_t *datau8 = new uint8_t[type_size * totalSize];
+//		is->read(datau8, type_size * totalSize);
 
-		float* dataf = reinterpret_cast<float *>(datau8);
+//		float* dataf = reinterpret_cast<float *>(datau8);
 
 		/*
 		for (int i = 0; i < totalSize; i++) {
@@ -84,5 +175,5 @@ public:
 	MTS_DECLARE_UTILITY()
 };
 
-MTS_EXPORT_UTILITY(VolumeReader, "Read CT data volumes")
+MTS_EXPORT_UTILITY(VolumeReader, "Read CT data volumes(0) or BlockInfo(1) or BlockIndices(2)")
 MTS_NAMESPACE_END
