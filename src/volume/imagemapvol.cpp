@@ -119,18 +119,20 @@ public:
 			/* the coordiantes in map are in range (1,1) to (imageReso.x, imageReso.y) */
 			for (int j = 0; j < m_mapReso.y; ++j) {
 				for (int i = 0; i < m_mapReso.x; ++i) {
-					if (m_map[j*m_mapReso.x + i] <= 0 || m_map[j*m_mapReso.x + i] > m_imageReso.x) {
-						Log(EError, "Invalid pixel coordinate in found in map");
+					int x = m_map[2*(j*m_mapReso.x + i)];
+					int y = m_map[2*(j*m_mapReso.x + i) + 1];
+					if (x <= 0 || x > m_imageReso.x) {
+						Log(EError, "Invalid pixel coordinate in found in map(%d,%d), (x,y)->(%d,%d), x", i, j, x, y);
 					}
-					if (m_map[j*m_mapReso.x + i + 1] <= 0 || m_map[j*m_mapReso.x + i + 1] > m_imageReso.y) {
-						Log(EError, "Invalid pixel coordinate in found in map");
+					if (y <= 0 || y > m_imageReso.y) {
+						Log(EError, "Invalid pixel coordinate in found in map(%d,%d), (x,y)->(%d,%d), y", i, j, x, y);
 					}
 				}
 			}
 
 			/* compute pixel size */
 			Vector extents(m_dataAABB.getExtents());
-			m_pixelSize = Vector2(extents.x / m_imageReso.x, extents.y / m_imageReso.y);
+			m_pixelSize = Vector2(extents.x / static_cast<Float>(m_imageReso.x), extents.y / static_cast<Float>(m_imageReso.y));
 
             /* Compute transforms */
             m_volumeAABB.min.x = -0.5f*static_cast<Float>(m_mapReso.x)*m_pixelSize.x;	// AABB? what does '*blockSize' means?// understood.
@@ -527,8 +529,8 @@ protected:
 			return -1;
 
 		// compute pixel location in image according to location in map
-		int pcdx = m_map[py*m_mapReso.x + px];
-		int pcdy = m_map[py*m_mapReso.x + px + 1];
+		int pcdx = m_map[2*(py*m_mapReso.x + px)];
+		int pcdy = m_map[2*(py*m_mapReso.x + px) + 1];
 
 		// compute point in data grid volume from pixel location in image
 		p.x = (static_cast<Float>(pcdx - 1) + p.x - px) / static_cast<Float>(m_imageReso.x)
