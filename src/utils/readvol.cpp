@@ -49,18 +49,21 @@ public:
 
 		int *tileId = new int[res.x * res.y];
 		stream->readIntArray(tileId, res.x * res.y);
-		cout << "tile ids:" << endl;
-//		for (int i = 0; i < res.x * res.y; ++i) {
-		for (int i = 0; i < res.x; ++i) {
-			cout << tileId[i] << ",";
-		}
-		cout << endl;
 
 		Float *transforms = new Float[3 * res.x*res.y];
 		stream->readFloatArray(&transforms[0], 3 * res.x*res.y);
-		cout << "transforms:" << endl;
-		for (int i = 0; i < res.x; ++i) {
-			cout << "(" << transforms[3 * i] << "," << transforms[3 * i + 1] << "," << transforms[3 * i + 2] << "),";
+
+		bool foundId[8];
+		for (int i = 0; i < 8; ++i) foundId[i] = false;
+
+		cout << "tile ids and transforms:" << endl;
+		for (int i = 0; i < res.x * res.y; ++i) {
+//			if (!foundId[tileId[i]]) {
+				cout << tileId[i] << ", ";
+				cout << "(" << transforms[3 * i] << "," << transforms[3 * i + 1] << "," << transforms[3 * i + 2] << ")," << endl;
+
+//				foundId[tileId[i]] = true;
+//			}
 		}
 		cout << endl;
 
