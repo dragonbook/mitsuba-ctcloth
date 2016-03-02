@@ -121,14 +121,26 @@ public:
 				for (int i = 0; i < m_mapReso.x; ++i) {
 					int x = m_map[2*(j*m_mapReso.x + i)];
 					int y = m_map[2*(j*m_mapReso.x + i) + 1];
-					if (x <= 0 || x > m_imageReso.x) {
+					if (x < 0 || x >= m_imageReso.x) {
 						Log(EError, "Invalid pixel coordinate in found in map(%d,%d), (x,y)->(%d,%d), x", i, j, x, y);
 					}
-					if (y <= 0 || y > m_imageReso.y) {
+					if (y < 0 || y >= m_imageReso.y) {
 						Log(EError, "Invalid pixel coordinate in found in map(%d,%d), (x,y)->(%d,%d), y", i, j, x, y);
 					}
 				}
 			}
+
+			Log(EDebug, "--------------------map--------------------\n");
+			for (int i = 0; i < 3; ++i) {
+				for (int j = 0; j < 3; ++j) {
+					int x = m_map[2*(j*m_mapReso.x + i)];
+					int y = m_map[2*(j*m_mapReso.x + i) + 1];
+
+					Log(EDebug, "(%d, %d), ", x, y);
+				}
+				Log(EDebug, "\n");
+			}
+			Log(EDebug, "-------------------------------------------\n");
 
 			/* compute pixel size */
 			Vector extents(m_dataAABB.getExtents());
@@ -533,9 +545,9 @@ protected:
 		int pcdy = m_map[2*(py*m_mapReso.x + px) + 1];
 
 		// compute point in data grid volume from pixel location in image
-		p.x = (static_cast<Float>(pcdx - 1) + p.x - px) / static_cast<Float>(m_imageReso.x)
+		p.x = (static_cast<Float>(pcdx) + p.x - std::floor(p.x)) / static_cast<Float>(m_imageReso.x)
 			* static_cast<Float>(m_dataReso.x);
-		p.y = (static_cast<Float>(pcdy - 1) + p.y - py) / static_cast<Float>(m_imageReso.y)
+		p.y = (static_cast<Float>(pcdy) + p.y - std::floor(p.y)) / static_cast<Float>(m_imageReso.y)
 			* static_cast<Float>(m_dataReso.y);
 		p.z = p.z * m_dataReso.z;
 
