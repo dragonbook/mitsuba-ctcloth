@@ -161,16 +161,24 @@ public:
 				break;
 		}
 
-//		uint8_t *datau8 = new uint8_t[type_size * totalSize];
-//		is->read(datau8, type_size * totalSize);
+		if (type_size == 1) {
+			uint8_t *datau8 = new uint8_t[type_size * totalSize];
+			is->read(datau8, type_size * totalSize);
+//			float* dataf = reinterpret_cast<float *>(datau8);
 
-//		float* dataf = reinterpret_cast<float *>(datau8);
+			bool found[256];
+			for (int i = 0; i < 256; ++i) found[i] = false;
 
-		/*
-		for (int i = 0; i < totalSize; i++) {
-			cout << dataf[i] << ", ";
+			cout << "yarnId information: " << endl;
+			for (int i = 0; i < totalSize; ++i) {
+				if (!found[datau8[i]]) {
+					cout << static_cast<int>(datau8[i]) << ", ";
+					found[datau8[i]] = true;
+				}
+			}
+			cout << endl;
 		}
-		cout << endl;*/
+
 
 		return 0;
 	}
