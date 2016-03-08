@@ -180,8 +180,13 @@ public:
 
 			/* Compute step size */
 			m_stepSize = std::numeric_limits<Float>::infinity();
+			/*
 			for (int i = 0; i<3; ++i)
 				m_stepSize = 0.5f * std::min(m_stepSize, extents[i] / (Float)(m_dataReso[i] - 1));
+			*/
+			for (int i = 0; i < 3; ++i) {
+				m_stepSize = std::min(m_stepSize, 0.5f * extents[i] / (Float)(m_dataReso[i] - 1));
+			}
 
 		    /* Precompute cosine and sine lookup tables */
 		    for (int i=0; i<255; i++) {
