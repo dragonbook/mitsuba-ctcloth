@@ -151,7 +151,7 @@ public:
         if ( albedo ) *albedo = Spectrum(0.0f);
         if ( gloss ) *gloss = 0.0f;
 
-		Point q = m_worldToVolume.transformAffine(_p);
+		Point q = m_worldToBlock.transformAffine(_p);
         if ( updateLocation(q) )
             m_block->lookupBundle(q, density, direction, albedo, gloss);
     }
