@@ -17,5 +17,6 @@ plugins += env.SharedLibrary('instancedvol', ['instancedvol.cpp'])
 plugins += env.SharedLibrary('instancedvolplus', ['instancedvolplus.cpp'])
 plugins += env.SharedLibrary('btmapvol', ['btmapvol.cpp'])
 plugins += env.SharedLibrary('imagemapvol', ['imagemapvol.cpp'])
+plugins += env.SharedLibrary('imagemapvol_low', ['imagemapvol_low.cpp'])
 
 Export('plugins')
