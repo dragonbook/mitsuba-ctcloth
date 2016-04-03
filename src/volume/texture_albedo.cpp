@@ -80,6 +80,7 @@ public:
 		stream->setByteOrder(Stream::ELittleEndian);
 
 		m_reso = Vector3i(stream);
+		Log(EDebug, "%%%%------------ albedo map info: ------------------\n");
 		Log(EDebug, "m_reso: %d, %d, %d\n", m_reso.x, m_reso.y, m_reso.z);
 
 		m_nSpectrumItems = stream->readInt();
@@ -147,7 +148,7 @@ public:
         if ( gloss ) *gloss = 0.0f;
 
         m_block->lookupBundle(_p, density, direction, albedo, gloss);
-		if (density && *density > 0.0f && albedo) updateAlbedo(_p, albedo);
+		if (albedo) updateAlbedo(_p, albedo);
     }
 	
     bool supportsBundleLookups() const { return m_block->supportsBundleLookups(); }
