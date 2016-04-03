@@ -147,7 +147,7 @@ public:
         if ( gloss ) *gloss = 0.0f;
 
         m_block->lookupBundle(_p, density, direction, albedo, gloss);
-		updateAlbedo(_p, albedo);
+		if (density && *density > 0.0f && albedo) updateAlbedo(_p, albedo);
     }
 	
     bool supportsBundleLookups() const { return m_block->supportsBundleLookups(); }
