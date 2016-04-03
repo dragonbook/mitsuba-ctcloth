@@ -1070,6 +1070,15 @@
     <ClCompile Include="..\src\volume\imagemapvol.cpp">
       <Filter>Source Files\volume</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\volume\imagemapvol_low.cpp">
+      <Filter>Source Files\volume</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\volume\texture_albedo.cpp">
+      <Filter>Source Files\volume</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\volume\directional_albedo.cpp">
+      <Filter>Source Files\volume</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup Label="Header Files">
     <ClInclude Include="..\src\converter\converter.h">

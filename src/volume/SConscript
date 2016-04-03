@@ -18,5 +18,7 @@ plugins += env.SharedLibrary('instancedvolplus', ['instancedvolplus.cpp'])
 plugins += env.SharedLibrary('btmapvol', ['btmapvol.cpp'])
 plugins += env.SharedLibrary('imagemapvol', ['imagemapvol.cpp'])
 plugins += env.SharedLibrary('imagemapvol_low', ['imagemapvol_low.cpp'])
+plugins += env.SharedLibrary('directional_albedo', ['directional_albedo.cpp'])
+plugins += env.SharedLibrary('texture_albedo', ['texture_albedo.cpp'])
 
 Export('plugins')
