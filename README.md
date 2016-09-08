@@ -1,6 +1,9 @@
 # mitsuba-ctcloth
 Code for rendering fabric volumes described in papers: ctcloth11 and ctcloth12.
 
+## Screenshot
+![Screenshot](https://github.com/dragonbook/mitsuba-ctcloth/resources/mitsuba_preview.png "mitsuba preview")
+
 ## Code
 The main code is copied from [ctcloth12](http://www.cs.cornell.edu/projects/ctcloth/data/).
 
