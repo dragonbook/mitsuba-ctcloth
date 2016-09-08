@@ -134,7 +134,7 @@ protected:
 		}
 		else {
 			Spectrum res;
-			res.fromLinearRGB(std::abs(direction->x), std::abs(direction->y), std::abs(direction->z));
+			res.fromLinearRGB(std::abs(direction->x) + Epsilon, std::abs(direction->y) + Epsilon, std::abs(direction->z) + Epsilon);
 			*albedo = res;
 		}
 	}
